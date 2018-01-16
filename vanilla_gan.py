@@ -89,7 +89,7 @@ if not os.path.exists('out/'):
 
 i = 0
 
-for it in range(1000000):
+for it in range(2000000):
 	if it % 1000 == 0:
 		samples = sess.run(G_sample, feed_dict={Z: sample_Z(16, Z_dim)})
 
@@ -101,7 +101,8 @@ for it in range(1000000):
 	X_mb, _ = mnist.train.next_batch(mb_size)
 
 	_, D_loss_curr = sess.run([D_solver, D_loss], feed_dict={X: X_mb, Z: sample_Z(mb_size, Z_dim)})
-	_, G_loss_curr = sess.run([G_solver, G_loss], feed_dict={Z: sample_Z(mb_size, Z_dim)})
+	if it % 5 == 0:
+		_, G_loss_curr = sess.run([G_solver, G_loss], feed_dict={Z: sample_Z(mb_size, Z_dim)})
 
 	if it % 1000 == 0:
 		print('Iter: {}'.format(it))
