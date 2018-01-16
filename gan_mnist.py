@@ -12,20 +12,20 @@ def generator(x):
 	w_init = tf.truncated_normal_initializer(mean=0, stddev=0.02)
 	b_init = tf.constant_initializer(0.)
 
-	w0 = get_variable('G_w0', [x.get_shape()[1], 256], initializer=w_init)
-	b0 = get_variable('G_b0', [256], initializer=b_init)
+	w0 = tf.get_variable('G_w0', [x.get_shape()[1], 256], initializer=w_init)
+	b0 = tf.get_variable('G_b0', [256], initializer=b_init)
 	h0 = tf.nn.relu(tf.matmul(x, w0) + b0)
 
-	w1 = get_variable('G_w1', [h0.get_shape()[1], 512], initializer=w_init)
-	b1 = get_variable('G_b1', [512], initializer=b_init)
+	w1 = tf.get_variable('G_w1', [h0.get_shape()[1], 512], initializer=w_init)
+	b1 = tf.get_variable('G_b1', [512], initializer=b_init)
 	h1 = tf.nn.relu(tf.matmul(h0, w1) + b1)
 
-	w2 = get_variable('G_w2', [h1.get_shape()[1], 1024], initializer=w_init)
-	b2 = get_variable('G_b2', [1024], initializer=b_init)
-	h2 = tf.nn.relu(tf.matmul(g1, w2) + b2)
+	w2 = tf.get_variable('G_w2', [h1.get_shape()[1], 1024], initializer=w_init)
+	b2 = tf.get_variable('G_b2', [1024], initializer=b_init)
+	h2 = tf.nn.relu(tf.matmul(h1, w2) + b2)
 
-	w3 = get_variable('G_w3', [h2.get_shape()[1], 784], initializer=w_init)
-	b3 = get_variable('G_b3', [784], initializer=b_init)
+	w3 = tf.get_variable('G_w3', [h2.get_shape()[1], 784], initializer=w_init)
+	b3 = tf.get_variable('G_b3', [784], initializer=b_init)
 	h3 = tf.nn.relu(tf.matmul(h2, w3) + b3)
 
 	return h3
@@ -35,23 +35,23 @@ def discriminator(x, drop_out):
 	w_init = tf.truncated_normal_initializer(mean=0, stddev=0.02)
 	b_init = tf.constant_initializer(0.)
 
-	w0 = tf.variable('D_w0', [x.get_shape()[1], 1024], initializer=w_init)
-	b0 = tf.variable('D_b0', [1024], initializer=b_init)
+	w0 = tf.get_variable('D_w0', [x.get_shape()[1], 1024], initializer=w_init)
+	b0 = tf.get_variable('D_b0', [1024], initializer=b_init)
 	h0 = tf.nn.relu(tf.matmul(x, w0) + b0)
 	h0 = tf.nn.dropout(h0, drop_out)
 
-	w1 = tf.variable('D_w1', [h0.get_shape()[1], 512], initializer=w_init)
-	b1 = tf.variable('D_b1', [512], initializer=b_init)
+	w1 = tf.get_variable('D_w1', [h0.get_shape()[1], 512], initializer=w_init)
+	b1 = tf.get_variable('D_b1', [512], initializer=b_init)
 	h1 = tf.nn.relu(tf.matmul(h0, w1) + b1)
 	h1 = tf.nn.dropout(h1, drop_out)
 
-	w2 = tf.variable('D_w2', [h1.get_shape()[1], 256], initializer=w_init)
-	b2 = tf.variable('D_b2', [256], initializer=b_init)
+	w2 = tf.get_variable('D_w2', [h1.get_shape()[1], 256], initializer=w_init)
+	b2 = tf.get_variable('D_b2', [256], initializer=b_init)
 	h2 = tf.nn.relu(tf.matmul(h1, w2) + b2)
 	h2 = tf.nn.dropout(h2, drop_out)
 
-	w3 = tf.variable('D_w3', [h2.get_shape()[1], 1], initializer=w_init)
-	b3 = tf.variable('D_b3', [1], initializer=b_init)
+	w3 = tf.get_variable('D_w3', [h2.get_shape()[1], 1], initializer=w_init)
+	b3 = tf.get_variable('D_b3', [1], initializer=b_init)
 	h3 = tf.nn.relu(tf.matmul(h2, w3) + b3)
 
 	return h3
@@ -112,6 +112,7 @@ G_vars = [var for var in t_vars if 'G_' in var.name]
 D_optim = tf.train.AdamOptimizer(lr).minimize(D_loss, var_list=D_vars)
 G_optim = tf.train.AdamOptimizer(lr).minimize(G_loss, var_list=G_vars)
 
+print('begin to train!')
 sess = tf.InteractiveSession()
 tf.global_variables_initializer().run()
 
@@ -123,15 +124,19 @@ if not os.path.isdir('MNIST_GAN_results/Fixed_results'):
 	os.mkdir('MNIST_GAN_results/Fixed_results')
 
 for epoch in range(train_epoch):
+	G_losses = []
+	D_losses = []
 	for iter in range(train_set.shape[0] // batch_size):
 		x_ = train_set[iter*batch_size:(iter+1)*batch_size]
 		z_ = np.random.normal(0, 1, (batch_size, 100))
 		loss_d_, _ = sess.run([D_loss, D_optim], {x: x_, z: z_, drop_out: 0.3})
+		D_losses.append(loss_d_)
 
 		z_ = np.random.normal(0, 1, (batch_size, 100))
 		loss_g_, _ = sess.run([G_loss, G_optim], {z: z_, drop_out: 0.3})
+		G_losses.append(loss_g_)
 
-	print('epoch: %d loss_d: %.3f, loss_g: %.3f' % (epoch + 1, D_losses, G_losses))
+	print('epoch: %d loss_d: %.3f, loss_g: %.3f' % (epoch + 1, np.mean(D_losses), np.mean(G_losses)))
 	p = 'MNIST_GAN_results/Random_results/MNIST_GAN_' + str(epoch + 1) + '.png'
 	fixed_p = 'MNIST_GAN_results/Fixed_results/MNIST_GAN_' + str(epoch + 1) + '.png'
 	show_result((epoch + 1), save=True, path=p, isFix=False)
