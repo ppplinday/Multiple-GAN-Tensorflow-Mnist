@@ -48,7 +48,7 @@ def discriminator(x, isTrain=True, reuse=False):
 fixed_z_ = np.random.normal(0, 1, (25, 100)).reshape(25, 1, 1, 100)
 def show_result(num_epoch, show = False, save = False, path = 'result.png'):
 	z_ = np.random.normal(0, 1, (25, 100))
-	
+
 	test_images = sess.run(G_z, {z: fixed_z_, isTrain: False})
 
 	size_figure_grid = 5
@@ -61,7 +61,7 @@ def show_result(num_epoch, show = False, save = False, path = 'result.png'):
 		i = k // 5
 		j = k % 5
 		ax[i, j].cla()
-		ax[i, j].imshow(np.reshape(test_images[k], (28, 28)), cmap='gray')
+		ax[i, j].imshow(np.reshape(test_images[k], (64, 64)), cmap='gray')
 
 	label = 'Epoch {0}'.format(num_epoch)
 	fig.text(0.5, 0.04, label, ha='center')
