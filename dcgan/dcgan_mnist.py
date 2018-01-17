@@ -45,10 +45,10 @@ def discriminator(x, isTrain=True, reuse=False):
 
 		return out, conv5
 
-fixed_z_ = np.random.normal(0, 1, (25, 100))
+fixed_z_ = np.random.normal(0, 1, (25, 100)).reshape(25, 1, 1, 100)
 def show_result(num_epoch, show = False, save = False, path = 'result.png'):
 	z_ = np.random.normal(0, 1, (25, 100))
-	fixed_z_ = fixed_z_.reshape(25, 1, 1, 100)
+	
 	test_images = sess.run(G_z, {z: fixed_z_, isTrain: False})
 
 	size_figure_grid = 5
