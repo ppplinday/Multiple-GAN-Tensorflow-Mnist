@@ -46,13 +46,10 @@ def discriminator(x, isTrain=True, reuse=False):
 		return out, conv5
 
 fixed_z_ = np.random.normal(0, 1, (25, 100))
-def show_result(num_epoch, save = False, path = 'result.png', isFix=False):
+def show_result(num_epoch, show = False, save = False, path = 'result.png'):
 	z_ = np.random.normal(0, 1, (25, 100))
 
-	if isFix:
-		test_images = sess.run(G_z, {z: fixed_z_, drop_out: 0.0})
-	else:
-		test_images = sess.run(G_z, {z: z_, drop_out: 0.0})
+	test_images = sess.run(G_z, {z: fixed_z_, isTrain: False})
 
 	size_figure_grid = 5
 	fig, ax = plt.subplots(size_figure_grid, size_figure_grid, figsize=(5, 5))
