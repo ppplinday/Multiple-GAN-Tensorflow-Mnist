@@ -103,7 +103,7 @@ with tf.variable_scope('D') as scope:
 
 eps = 1e-2
 D_loss = tf.reduce_mean(-tf.log(D_real + eps) - tf.log(1 - D_fake + eps))
-G_loss = tf.reduce_mean(- tf.log(D_fake + eps))
+G_loss = tf.reduce_mean(-tf.log(D_fake + eps))
 
 t_vars = tf.trainable_variables()
 D_vars = [var for var in t_vars if 'D_' in var.name]
