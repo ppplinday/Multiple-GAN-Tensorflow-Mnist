@@ -91,59 +91,64 @@ G_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=D_fake_lo
 T_vars = tf.trainable_variables()
 D_vars = [var for var in T_vars if var.name.startswith('discriminator')]
 G_vars = [var for var in T_vars if var.name.startswith('generator')]
+for var in D_vars:
+	print(var)
+print('next!!!')
+for var in G_vars:
+	print(var)
 
-with tf.control_dependencies(tf.get_collection(tf.GraphKeys.UPDATE_OPS)):
-	D_optim = tf.train.AdamOptimizer(lr, beta1=0.5).minimize(D_loss, var_list=D_vars)
-	G_optim = tf.train.AdamOptimizer(lr, beta1=0.5).minimize(G_loss, var_list=G_vars)
+# with tf.control_dependencies(tf.get_collection(tf.GraphKeys.UPDATE_OPS)):
+# 	D_optim = tf.train.AdamOptimizer(lr, beta1=0.5).minimize(D_loss, var_list=D_vars)
+# 	G_optim = tf.train.AdamOptimizer(lr, beta1=0.5).minimize(G_loss, var_list=G_vars)
 
-sess = tf.InteractiveSession()
-tf.global_variables_initializer().run()
+# sess = tf.InteractiveSession()
+# tf.global_variables_initializer().run()
 
-train_set = tf.image.resize_images(mnist.train.images, [64, 64])
-train_set = (train_set - 0.5) / 0.5
+# train_set = tf.image.resize_images(mnist.train.images, [64, 64])
+# train_set = (train_set - 0.5) / 0.5
 
-root = 'MNIST_DCGAN_results/'
-model = 'MNIST_DCGAN_'
-if not os.path.isdir(root):
-	os.mkdir(root)
-if not os.path.isdir(root + 'Fixed_results'):
-	os.mkdir(root + 'Fixed_results')
+# root = 'MNIST_DCGAN_results/'
+# model = 'MNIST_DCGAN_'
+# if not os.path.isdir(root):
+# 	os.mkdir(root)
+# if not os.path.isdir(root + 'Fixed_results'):
+# 	os.mkdir(root + 'Fixed_results')
 
-np.random.seed(int(time.time()))
-print('training start!')
-start_time = time.time()
-for epoch in range(train_epoch):
-	G_losses = []
-	D_losses = []
+# np.random.seed(int(time.time()))
+# print('training start!')
+# start_time = time.time()
+# for epoch in range(train_epoch):
+# 	G_losses = []
+# 	D_losses = []
 
-	epoch_start_time = time.time()
-	for iter in range(mnist.train.num_examples // batch_size):
-		x_ = train_set[iter*batch_size:(iter+1)*batch_size]
-		z_ = np.random.normal(0, 1, (batch_size, 1, 1, 100))
-		x_ = np.array(sess.run([x_])).reshape(batch_size, 64, 64, 1)
+# 	epoch_start_time = time.time()
+# 	for iter in range(mnist.train.num_examples // batch_size):
+# 		x_ = train_set[iter*batch_size:(iter+1)*batch_size]
+# 		z_ = np.random.normal(0, 1, (batch_size, 1, 1, 100))
+# 		x_ = np.array(sess.run([x_])).reshape(batch_size, 64, 64, 1)
 
-		loss_d_, _ = sess.run([D_loss, D_optim], {x: x_, z: z_, isTrain: True})
-		D_losses.append(loss_d_)
+# 		loss_d_, _ = sess.run([D_loss, D_optim], {x: x_, z: z_, isTrain: True})
+# 		D_losses.append(loss_d_)
 
-		z_ = np.random.normal(0, 1, (batch_size, 1, 1, 100))
-		loss_g_, _ = sess.run([G_loss, G_optim], {z: z_, x: x_, isTrain: True})
-		G_losses.append(loss_g_)
+# 		z_ = np.random.normal(0, 1, (batch_size, 1, 1, 100))
+# 		loss_g_, _ = sess.run([G_loss, G_optim], {z: z_, x: x_, isTrain: True})
+# 		G_losses.append(loss_g_)
 
-	epoch_end_time = time.time()
-	per_epoch_ptime = epoch_end_time - epoch_start_time
-	print('[%d/%d] - ptime: %.2f loss_d: %.3f, loss_g: %.3f' % ((epoch + 1), train_epoch, per_epoch_ptime, np.mean(D_losses), np.mean(G_losses)))
-	fixed_p = root + 'Fixed_results/' + model + str(epoch + 1) + '.png'
-	show_result((epoch + 1), save=True, path=fixed_p)
+# 	epoch_end_time = time.time()
+# 	per_epoch_ptime = epoch_end_time - epoch_start_time
+# 	print('[%d/%d] - ptime: %.2f loss_d: %.3f, loss_g: %.3f' % ((epoch + 1), train_epoch, per_epoch_ptime, np.mean(D_losses), np.mean(G_losses)))
+# 	fixed_p = root + 'Fixed_results/' + model + str(epoch + 1) + '.png'
+# 	show_result((epoch + 1), save=True, path=fixed_p)
 
-end_time = time.time()
-total_ptime = end_time - start_time
-print('Avg per epoch ptime: %.2f, total %d epochs ptime: %.2f' % (np.mean(train_hist['per_epoch_ptimes']), train_epoch, total_ptime))
-print("Training finish!... save training results")
+# end_time = time.time()
+# total_ptime = end_time - start_time
+# print('Avg per epoch ptime: %.2f, total %d epochs ptime: %.2f' % (np.mean(train_hist['per_epoch_ptimes']), train_epoch, total_ptime))
+# print("Training finish!... save training results")
 
-images = []
-for e in range(train_epoch):
-	img_name = root + 'Fixed_results/' + model + str(e + 1) + '.png'
-	images.append(imageio.imread(img_name))
-imageio.mimsave(root + model + 'generation_animation.gif', images, fps=5)
+# images = []
+# for e in range(train_epoch):
+# 	img_name = root + 'Fixed_results/' + model + str(e + 1) + '.png'
+# 	images.append(imageio.imread(img_name))
+# imageio.mimsave(root + model + 'generation_animation.gif', images, fps=5)
 
-sess.close()
+# sess.close()
