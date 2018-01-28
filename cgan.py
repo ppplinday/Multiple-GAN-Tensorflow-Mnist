@@ -189,6 +189,10 @@ class CGAN:
 				feed_dict={self.labels: batch_labels, self.z: batch_z})
 			self.writer.add_summary(summary_str, id)
 
+			_, summary_str = self.sess.run([g_optim, self.g_sum],
+				feed_dict={self.labels: batch_labels, self.z: batch_z})
+			self.writer.add_summary(summary_str, id)
+
 			err_d_fake = self.d_loss_fake.eval({self.z: batch_z, self.labels: batch_labels})
 			err_d_real = self.d_loss_real.eval({self.images: batch_images, self.labels: batch_labels})
 			err_g = self.g_loss.eval({self.z: batch_z, self.labels: batch_labels})
