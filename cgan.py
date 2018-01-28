@@ -145,7 +145,7 @@ class CGAN:
 		self.saver = tf.train.Saver(max_to_keep=1)
 
 	def train(self):
-		mnist = input_data.read_data_sets('../../MNIST_data', one_hot=True)
+		mnist = input_data.read_data_sets('./MNIST_data', one_hot=True)
 
 		d_optim = tf.train.AdamOptimizer(config.learning_rate, beta1=config.beta1).minimize(self.d_loss, var_list=self.d_vars)
 		g_optim = tf.train.AdamOptimizer(config.learning_rate, beta1=config.beta1).minimize(self.g_loss, var_list=self.g_vars)
