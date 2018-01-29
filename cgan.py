@@ -78,7 +78,7 @@ def merge(images, size):
 def save_images(images, size, image_path):
 	images = images / 2. + 0.5
 	img = merge(images, size)
-	return scipy.misc.imsave(image_path, (img).astype(np.uint8))
+	return scipy.misc.imsave(image_path, (255*img).astype(np.uint8))
 
 def create_file(path):
 	if not os.path.exists(path):
@@ -180,6 +180,8 @@ class CGAN:
 			batch_images, batch_labels =  mnist.train.next_batch(self.batch_size)
 			batch_images = (batch_images - 0.5) * 2.0
 			batch_z = np.random.uniform(-1, 1, [self.batch_size, self.z_dim]).astype(np.float32)
+			before = batch_images.reshape(-1, 28, 28, 1)
+			save_images(before, [10, 10], self.sample_dir + 'before.png')
 
 			# update D and G
 			if id % 100 == 0:
