@@ -147,8 +147,8 @@ class CGAN:
 	def train(self):
 		mnist = input_data.read_data_sets('./MNIST_data', one_hot=True)
 
-		d_optim = tf.train.AdamOptimizer(config.learning_rate, beta1=config.beta1).minimize(self.d_loss, var_list=self.d_vars)
-		g_optim = tf.train.AdamOptimizer(config.learning_rate, beta1=config.beta1).minimize(self.g_loss, var_list=self.g_vars)
+		d_optim = tf.train.AdamOptimizer().minimize(self.d_loss, var_list=self.d_vars)
+		g_optim = tf.train.AdamOptimizer().minimize(self.g_loss, var_list=self.g_vars)
 
 		try:
 			tf.global_variables_initializer().run()
