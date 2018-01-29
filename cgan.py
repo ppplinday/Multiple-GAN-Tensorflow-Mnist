@@ -92,7 +92,7 @@ class CGAN:
 		self.class_dim = 10
 		self.g = Generator()
 		self.d = Discriminator()
-		self.z = tf.random_uniform([self.batch_size, self.z_dim], minval=-1.0, maxval=1.0)
+		#self.z = tf.random_uniform([self.batch_size, self.z_dim], minval=-1.0, maxval=1.0)
 
 		self.sample_size = 100
 		self.model_name = "CGAN.models"
@@ -185,13 +185,10 @@ class CGAN:
 				feed_dict={self.images: batch_images, self.labels: batch_labels, self.z: batch_z})
 			self.writer.add_summary(summary_str, id)
 
-			_, summary_str = self.sess.run([g_optim, self.g_sum],
-				feed_dict={self.labels: batch_labels, self.z: batch_z})
-			self.writer.add_summary(summary_str, id)
-
-			_, summary_str = self.sess.run([g_optim, self.g_sum],
-				feed_dict={self.labels: batch_labels, self.z: batch_z})
-			self.writer.add_summary(summary_str, id)
+			for t in range(10):
+				_, summary_str = self.sess.run([g_optim, self.g_sum],
+					feed_dict={self.labels: batch_labels, self.z: batch_z})
+				self.writer.add_summary(summary_str, id)
 
 			err_d_fake = self.d_loss_fake.eval({self.z: batch_z, self.labels: batch_labels})
 			err_d_real = self.d_loss_real.eval({self.images: batch_images, self.labels: batch_labels})
