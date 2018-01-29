@@ -205,6 +205,9 @@ class CGAN:
 					feed_dict={self.z: sample_z, self.images: sample_images, self.labels: sample_labels}
 				)
 				samples = samples.reshape(-1, 28, 28, 1)
+				print('shape of samples = ')
+				print(samples.shape)
+				print(samples[0])
 				save_images(samples, [10, 10], self.sample_dir + 'sample_{:07d}.png'.format(id))
 				print("[Sample] d_loss: {:.8f}, g_loss: {:.8f}".format(d_loss, g_loss))
 
