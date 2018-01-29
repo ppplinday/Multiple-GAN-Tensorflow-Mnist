@@ -165,6 +165,7 @@ class CGAN:
 		for i in range(10):
 			sample_labels[i * 10: (i + 1) * 10, i] = 1
 		sample_images, _ = mnist.test.next_batch(100)
+		sample_images = (sample_images - 0.5) * 2.0
 		start_time = time.time()
 
 		# load check point
