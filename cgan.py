@@ -148,7 +148,7 @@ class CGAN:
 		mnist = input_data.read_data_sets('./MNIST_data', one_hot=True)
 
 		d_optim = tf.train.AdamOptimizer().minimize(self.d_loss, var_list=self.d_vars)
-		g_optim = tf.train.AdamOptimizer(0.02).minimize(self.g_loss, var_list=self.g_vars)
+		g_optim = tf.train.AdamOptimizer().minimize(self.g_loss, var_list=self.g_vars)
 
 		try:
 			tf.global_variables_initializer().run()
@@ -181,9 +181,10 @@ class CGAN:
 			batch_z = np.random.uniform(-1, 1, [self.batch_size, self.z_dim]).astype(np.float32)
 
 			# update D and G
-			_, summary_str = self.sess.run([d_optim, self.d_sum], 
-				feed_dict={self.images: batch_images, self.labels: batch_labels, self.z: batch_z})
-			self.writer.add_summary(summary_str, id)
+			if id % 100 == 0:
+				_, summary_str = self.sess.run([d_optim, self.d_sum], 
+					feed_dict={self.images: batch_images, self.labels: batch_labels, self.z: batch_z})
+				self.writer.add_summary(summary_str, id)
 
 			_, summary_str = self.sess.run([g_optim, self.g_sum],
 				feed_dict={self.labels: batch_labels, self.z: batch_z})
