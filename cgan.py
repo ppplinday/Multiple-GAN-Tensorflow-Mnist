@@ -76,7 +76,7 @@ def merge(images, size):
 
 # save merge picture
 def save_images(images, size, image_path):
-	images = images / 2. + 0.5
+	images = images
 	img = merge(images, size)
 	return scipy.misc.imsave(image_path, (255*img).astype(np.uint8))
 
@@ -165,7 +165,7 @@ class CGAN:
 		for i in range(10):
 			sample_labels[i * 10: (i + 1) * 10, i] = 1
 		sample_images, _ = mnist.test.next_batch(100)
-		sample_images = (sample_images - 0.5) * 2.0
+		# sample_images = (sample_images - 0.5) * 2.0
 		start_time = time.time()
 
 		# load check point
@@ -178,28 +178,28 @@ class CGAN:
 
 			# mini_batch
 			batch_images, batch_labels =  mnist.train.next_batch(self.batch_size)
-			batch_images = (batch_images - 0.5) * 2.0
+			# batch_images = (batch_images - 0.5) * 2.0
 			batch_z = np.random.uniform(-1, 1, [self.batch_size, self.z_dim]).astype(np.float32)
-			before = batch_images.reshape(-1, 28, 28, 1)
-			save_images(before, [10, 10], self.sample_dir + 'before.png')
+			# before = batch_images.reshape(-1, 28, 28, 1)
+			# save_images(before, [10, 10], self.sample_dir + 'before.png')
 
 			# update D and G
 			if id % 100 == 0:
-				_, summary_str = self.sess.run([d_optim, self.d_sum], 
+				_, summary_str, err_d = self.sess.run([d_optim, self.d_sum, self.d_loss], 
 					feed_dict={self.images: batch_images, self.labels: batch_labels, self.z: batch_z})
 				self.writer.add_summary(summary_str, id)
 
-			_, summary_str = self.sess.run([g_optim, self.g_sum],
+			_, summary_str, err_g = self.sess.run([g_optim, self.g_sum, self.g_loss],
 				feed_dict={self.labels: batch_labels, self.z: batch_z})
 			self.writer.add_summary(summary_str, id)
 
-			err_d_fake = self.d_loss_fake.eval({self.z: batch_z, self.labels: batch_labels})
-			err_d_real = self.d_loss_real.eval({self.images: batch_images, self.labels: batch_labels})
-			err_g = self.g_loss.eval({self.z: batch_z, self.labels: batch_labels})
+			# err_d_fake = self.d_loss_fake.eval({self.z: batch_z, self.labels: batch_labels})
+			# err_d_real = self.d_loss_real.eval({self.images: batch_images, self.labels: batch_labels})
+			# err_g = self.g_loss.eval({self.z: batch_z, self.labels: batch_labels})
 
 			if id % 100 == 0:
 				print("Epoch: [{:4d}/{:4d}] time: {:4.4f}, d_loss: {:.8f}, g_loss: {:.8f}".format(
-						id, 1000000, time.time() - start_time, err_d_fake + err_d_real, err_g))
+						id, 1000000, time.time() - start_time, err_d, err_g))
 
 			if id % 10000 == 0:
 				samples, d_loss, g_loss = self.sess.run(
@@ -207,9 +207,9 @@ class CGAN:
 					feed_dict={self.z: sample_z, self.images: sample_images, self.labels: sample_labels}
 				)
 				samples = samples.reshape(-1, 28, 28, 1)
-				print('shape of samples = ')
-				print(samples.shape)
-				print(samples[0])
+				# print('shape of samples = ')
+				# print(samples.shape)
+				# print(samples[0])
 				save_images(samples, [10, 10], self.sample_dir + 'sample_{:07d}.png'.format(id))
 				print("[Sample] d_loss: {:.8f}, g_loss: {:.8f}".format(d_loss, g_loss))
 
