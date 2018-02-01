@@ -184,10 +184,10 @@ class CGAN:
 			# save_images(before, [10, 10], self.sample_dir + 'before.png')
 
 			# update D and G
-			if id % 100 == 0:
-				_, summary_str, err_d = self.sess.run([d_optim, self.d_sum, self.d_loss], 
-					feed_dict={self.images: batch_images, self.labels: batch_labels, self.z: batch_z})
-				self.writer.add_summary(summary_str, id)
+			
+			_, summary_str, err_d = self.sess.run([d_optim, self.d_sum, self.d_loss], 
+				feed_dict={self.images: batch_images, self.labels: batch_labels, self.z: batch_z})
+			self.writer.add_summary(summary_str, id)
 
 			_, summary_str, err_g = self.sess.run([g_optim, self.g_sum, self.g_loss],
 				feed_dict={self.labels: batch_labels, self.z: batch_z})
