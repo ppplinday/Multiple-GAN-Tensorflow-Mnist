@@ -3,6 +3,7 @@ import sys
 import scipy.misc
 import numpy as np
 from cgan import CGAN
+from vanilla_gan import Vanilla_GAN
 import tensorflow as tf
 
 if __name__ == '__main__':
@@ -11,6 +12,8 @@ if __name__ == '__main__':
 	with tf.Session() as sess:
 		if model_name == 'cgan':
 			model = CGAN(sess, dataset)
+		elif model_name == 'vanilla_gan':
+			model = Vanilla_GAN(sess, dataset)
 		else:
 			print("We cannot find this model")
 
