@@ -2,8 +2,9 @@ import os
 import sys
 import scipy.misc
 import numpy as np
-from cgan import CGAN
 from vanilla_gan import Vanilla_GAN
+from dcgan import DCGAN
+from cgan import CGAN
 import tensorflow as tf
 
 if __name__ == '__main__':
@@ -14,6 +15,8 @@ if __name__ == '__main__':
 			model = CGAN(sess, dataset)
 		elif model_name == 'vanilla_gan':
 			model = Vanilla_GAN(sess, dataset)
+		elif model_name == 'dcgan':
+			model = DCGAN(sess, dataset)
 		else:
 			print("We cannot find this model")
 
