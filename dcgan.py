@@ -242,7 +242,7 @@ class DCGAN:
 			print("Epoch: [{:4d}/{:4d}] time: {:4.4f}, d_loss: {:.8f}, g_loss: {:.8f}".format(
 					id, 12000, time.time() - start_time, err_d, err_g))
 
-			if id % 1 == 0:
+			if id % 100 == 0:
 				samples, d_loss, g_loss = self.sess.run(
 					[self.G, self.d_loss, self.g_loss],
 					feed_dict={self.z: sample_z, self.images: sample_images}
@@ -255,7 +255,7 @@ class DCGAN:
 				save_images(samples, [10, 10], self.sample_dir + 'sample_{:07d}.png'.format(id))
 				print("[Sample] d_loss: {:.8f}, g_loss: {:.8f}".format(d_loss, g_loss))
 
-			if id % 100 == 0:
+			if id % 1000 == 0:
 					self.save(self.checkpoint_dir)
 					print("Save the checkpoint for the count: {:4d}".format(id))
 
