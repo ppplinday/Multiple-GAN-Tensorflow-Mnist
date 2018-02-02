@@ -73,7 +73,7 @@ class Q:
 		with tf.variable_scope('q', reuse=self.reuse):
 
 			with tf.variable_scope('fc1'):
-				outputs = tf.layers.dense(outputs, self.depths[0], kernel_initializer=tf.random_normal_initializer(stddev=0.02), name='fc')
+				outputs = tf.layers.dense(inputs, self.depths[0], kernel_initializer=tf.random_normal_initializer(stddev=0.02), name='fc')
 				outputs = tf.nn.relu(outputs, name='outputs')
 
 			with tf.variable_scope('fc2'):
@@ -139,7 +139,7 @@ class InfoGAN:
 		self.G = self.g(self.z, self.labels)
 		self.D, self.D_logits = self.d(self.images, self.labels)
 		self.D_, self.D_logits_ = self.d(self.G, self.labels)
-		self.Q = self.q(Self.G)
+		self.Q = self.q(self.G)
 
 		self.d_sum = tf.summary.histogram("d", self.D)
 		self.d__sum = tf.summary.histogram("d_", self.D_)
@@ -156,7 +156,7 @@ class InfoGAN:
 			 										labels=tf.ones_like(self.D_)))
 		self.d_loss = self.d_loss_real + self.d_loss_fake
 		self.cond_ent = tf.reduce_mean(-tf.reduce_sum(tf.log(self.Q + 1e-8) * self.labels, 1))
-		self.ent = tf.reduce_mean(-tf.reduce_sum(tf.log(c + 1e-8) * self.labels, 1))
+		self.ent = tf.reduce_mean(-tf.reduce_sum(tf.log(self.labels + 1e-8) * self.labels, 1))
 		self.q_loss = self.cond_ent + self.ent
 
 		self.d_loss_real_sum = tf.summary.scalar("d_loss_real", self.d_loss_real)
@@ -222,8 +222,8 @@ class InfoGAN:
 				feed_dict={self.labels: batch_c, self.z: batch_z})
 			self.writer.add_summary(summary_str, id)
 
-			_, err_q = self.sess.run([q_optim],
-				feed_dict={self.labels: bbatch_c, self.z: batch_z})
+			_, err_q = self.sess.run([q_optim, self.q_loss],
+				feed_dict={self.labels: batch_c, self.z: batch_z})
 
 			# err_d_fake = self.d_loss_fake.eval({self.z: batch_z, self.labels: batch_labels})
 			# err_d_real = self.d_loss_real.eval({self.images: batch_images, self.labels: batch_labels})
@@ -231,7 +231,7 @@ class InfoGAN:
 
 			if id % 100 == 0:
 				print("Epoch: [{:4d}/{:4d}] time: {:4.4f}, d_loss: {:.8f}, g_loss: {:.8f}, q_loss: {:.8f}".format(
-						id, 1000000, time.time() - start_time, err_d, err_g))
+						id, 1000000, time.time() - start_time, err_d, err_g, err_q))
 
 			if id % 10000 == 0:
 				samples, d_loss, g_loss, q_loss = self.sess.run(
