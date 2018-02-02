@@ -243,7 +243,7 @@ class DCGAN:
 
 			
 			print("Epoch: [{:4d}/{:4d}] time: {:4.4f}, d_loss: {:.8f}, g_loss: {:.8f}".format(
-					id, 12000, time.time() - start_time, err_d, err_g))
+					id, 4000, time.time() - start_time, err_d, err_g))
 
 			if id % 100 == 0:
 				samples, d_loss, g_loss = self.sess.run(
