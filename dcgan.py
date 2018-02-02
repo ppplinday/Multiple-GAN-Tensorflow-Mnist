@@ -149,6 +149,7 @@ class DCGAN:
 
 	def build(self):
 		self.images = tf.placeholder(tf.float32, [None, 64, 64, 1], name='real_images')
+		self.is_training = tf.placeholder(tf.bool, name='is_training')
 		self.z = tf.placeholder(tf.float32, [None, self.z_dim], name='z')
 		self.z_sum = tf.summary.histogram("z", self.z)
 
@@ -214,7 +215,7 @@ class DCGAN:
 		else:
 			print('cannot load the checkpoint and init all the varibale')
 
-		for id in range(12000):
+		for id in range(4001):
 
 			# mini_batch
 			batch_images, batch_labels =  mnist.train.next_batch(self.batch_size)
@@ -229,11 +230,11 @@ class DCGAN:
 			# update D and G
 			#if id % 100 == 0:
 			_, summary_str, err_d = self.sess.run([d_optim, self.d_sum, self.d_loss], 
-				feed_dict={self.images: batch_images, self.z: batch_z})
+				feed_dict={self.images: batch_images, self.z: batch_z, self.is_training: True})
 			self.writer.add_summary(summary_str, id)
 
 			_, summary_str, err_g = self.sess.run([g_optim, self.g_sum, self.g_loss],
-				feed_dict={self.z: batch_z})
+				feed_dict={self.z: batch_z, self.is_training: True})
 			self.writer.add_summary(summary_str, id)
 
 			# err_d_fake = self.d_loss_fake.eval({self.z: batch_z})
@@ -247,7 +248,7 @@ class DCGAN:
 			if id % 100 == 0:
 				samples, d_loss, g_loss = self.sess.run(
 					[self.G, self.d_loss, self.g_loss],
-					feed_dict={self.z: sample_z, self.images: sample_images}
+					feed_dict={self.z: sample_z, self.images: sample_images, self.is_training: False}
 				)
 				samples = samples.reshape(-1, 64, 64, 1)
 				samples = tf.image.resize_images(samples, [28, 28]).eval()
