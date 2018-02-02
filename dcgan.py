@@ -183,8 +183,6 @@ class DCGAN:
 		self.saver = tf.train.Saver(max_to_keep=1)
 
 	def train(self):
-		# for eval()
-		tf.train.start_queue_runners()
 		mnist = input_data.read_data_sets('./MNIST_data', one_hot=True)
 
 		d_optim = tf.train.AdamOptimizer(0.0002, beta1=0.5).minimize(self.d_loss, var_list=self.d_vars)
@@ -194,6 +192,8 @@ class DCGAN:
 			tf.global_variables_initializer().run()
 		except:
 			tf.initialize_all_variables().run()
+		# for eval()
+		tf.train.start_queue_runners()
 
 		self.g_sum = tf.summary.merge([self.z_sum, self.d__sum,  self.d_loss_fake_sum, self.g_loss_sum])
 		self.d_sum = tf.summary.merge([self.z_sum, self.d_sum, self.d_loss_real_sum, self.d_loss_sum])
