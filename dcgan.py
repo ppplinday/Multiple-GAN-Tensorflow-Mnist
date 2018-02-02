@@ -183,6 +183,8 @@ class DCGAN:
 		self.saver = tf.train.Saver(max_to_keep=1)
 
 	def train(self):
+		# for eval()
+		tf.train.start_queue_runners()
 		mnist = input_data.read_data_sets('./MNIST_data', one_hot=True)
 
 		d_optim = tf.train.AdamOptimizer(0.0002, beta1=0.5).minimize(self.d_loss, var_list=self.d_vars)
