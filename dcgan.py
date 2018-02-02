@@ -115,7 +115,7 @@ def merge(images, size):
 
 # save merge picture
 def save_images(images, size, image_path):
-	images = images
+	images = (images * 0.5) + 0.5 
 	img = merge(images, size)
 	return scipy.misc.imsave(image_path, (255*img).astype(np.uint8))
 
@@ -202,7 +202,7 @@ class DCGAN:
 		sample_images = sample_images.reshape(-1, 28, 28, 1)
 		sample_images = tf.image.resize_images(sample_images, [64, 64]).eval()
 		sample_images = sample_images.reshape(-1, 64, 64, 1)
-		#sample_images = (sample_images - 0.5) * 2.0
+		sample_images = (sample_images - 0.5) * 2.0
 		start_time = time.time()
 
 		# load check point
@@ -217,7 +217,7 @@ class DCGAN:
 			batch_images, batch_labels =  mnist.train.next_batch(self.batch_size)
 			batch_images = batch_images.reshape(-1, 28, 28, 1)
 			batch_images = tf.image.resize_images(batch_images, [64, 64]).eval()
-			#batch_images = (batch_images - 0.5) * 2.0
+			batch_images = (batch_images - 0.5) * 2.0
 			batch_z = np.random.uniform(-1, 1, [self.batch_size, self.z_dim]).astype(np.float32)
 			# before = batch_images.reshape(-1, 28, 28, 1)
 			# print(before[0])
@@ -239,7 +239,7 @@ class DCGAN:
 
 			
 			print("Epoch: [{:4d}/{:4d}] time: {:4.4f}, d_loss: {:.8f}, g_loss: {:.8f}".format(
-					id, 1000000, time.time() - start_time, err_d, err_g))
+					id, 12000, time.time() - start_time, err_d, err_g))
 
 			if id % 10 == 0:
 				samples, d_loss, g_loss = self.sess.run(
