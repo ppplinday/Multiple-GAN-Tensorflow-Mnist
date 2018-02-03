@@ -214,9 +214,7 @@ class InfoGAN:
 			batch_images, _ =  mnist.train.next_batch(self.batch_size)
 			# batch_images = (batch_images - 0.5) * 2.0
 			batch_z = np.random.uniform(-1, 1, [self.batch_size, self.z_dim]).astype(np.float32)
-			classify = np.zeros([self.batch_size, 10])
-			index = np.random.randint(10)
-			classify[:,index] = 1
+			classify = np.random.multinomial(1, [0.1] * self.class_dim, size=self.batch_size)
 			conti = np.random.uniform(-1, 1, [self.batch_size, self.c_dim - self.class_dim]).astype(np.float32)
 			batch_c = np.concatenate((classify, conti), axis = 1)
 			# before = batch_images.reshape(-1, 28, 28, 1)
