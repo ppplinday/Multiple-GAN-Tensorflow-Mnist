@@ -196,7 +196,7 @@ class InfoGAN:
 		sample_classify = np.zeros([self.sample_size, self.class_dim])
 		for i in range(10):
 			sample_classify[i * 10: (i + 1) * 10, i] = 1
-		sample_conti = np.random.standard_normal(-1, 1, size=(self.sample_size, self.c_dim - self.class_dim))
+		sample_conti = np.random.uniform(-1, 1, size=(self.sample_size, self.c_dim - self.class_dim))
 		sample_c = np.concatenate((sample_classify, sample_conti), axis = 1)
 		sample_images, _ = mnist.test.next_batch(100)
 		# sample_images = (sample_images - 0.5) * 2.0
@@ -217,7 +217,7 @@ class InfoGAN:
 			classify = np.zeros([self.batch_size, 10])
 			index = np.random.randint(10)
 			classify[:,index] = 1
-			conti = np.random.standard_normal(-1, 1, [self.batch_size, self.c_dim - self.class_dim]).astype(np.float32)
+			conti = np.random.uniform(-1, 1, [self.batch_size, self.c_dim - self.class_dim]).astype(np.float32)
 			batch_c = np.concatenate((classify, conti), axis = 1)
 			# before = batch_images.reshape(-1, 28, 28, 1)
 			# save_images(before, [10, 10], self.sample_dir + 'before.png')
