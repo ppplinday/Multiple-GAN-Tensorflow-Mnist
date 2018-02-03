@@ -17,14 +17,14 @@ class Generator:
 		self.depths = depths
 		self.reuse = False
 
-	def __call__(self, inputs, labels):
+	def __call__(self, inputs, c):
 		inputs = tf.convert_to_tensor(inputs)
 		inputs = tf.cast(inputs, tf.float32)
-		labels = tf.convert_to_tensor(labels)
-		labels = tf.cast(labels, tf.float32)
+		c = tf.convert_to_tensor(c)
+		c = tf.cast(c, tf.float32)
 		with tf.variable_scope('generator', reuse=self.reuse):
 
-			outputs = tf.concat([inputs, labels], axis=1)
+			outputs = tf.concat([inputs, c], axis=1)
 
 			with tf.variable_scope('fc1'):
 				outputs = tf.layers.dense(outputs, self.depths[0], kernel_initializer=tf.random_normal_initializer(stddev=0.02), name='fc')
@@ -42,17 +42,13 @@ class Discriminator:
 		self.depths = depths
 		self.reuse = False
 
-	def __call__(self, inputs, labels):
+	def __call__(self, inputs):
 		inputs = tf.convert_to_tensor(inputs)
 		inputs = tf.cast(inputs, tf.float32)
-		labels = tf.convert_to_tensor(labels)
-		labels = tf.cast(labels, tf.float32)
 		with tf.variable_scope('discriminator', reuse=self.reuse):
 
-			outputs = tf.concat([inputs, labels], axis=1)
-
 			with tf.variable_scope('fc1'):
-				outputs = tf.layers.dense(outputs, self.depths[0], kernel_initializer=tf.random_normal_initializer(stddev=0.02), name='fc')
+				outputs = tf.layers.dense(inputs, self.depths[0], kernel_initializer=tf.random_normal_initializer(stddev=0.02), name='fc')
 				outputs = tf.nn.relu(outputs, name='outputs')
 
 			with tf.variable_scope('fc2'):
@@ -63,7 +59,7 @@ class Discriminator:
 			return res, outputs
 
 class Q:
-	def __init__(self, depths=[128, 10]):
+	def __init__(self, depths=[128, 12]):
 		self.depths = depths
 		self.reuse = False
 
@@ -78,10 +74,10 @@ class Q:
 
 			with tf.variable_scope('fc2'):
 				outputs = tf.layers.dense(outputs, self.depths[1], kernel_initializer=tf.random_normal_initializer(stddev=0.02), name='fc')
-				outputs = tf.nn.softmax(outputs, name='outputs') 	
+				res = tf.nn.softmax(outputs, name='outputs') 	
 
 			self.reuse = True
-			return outputs
+			return res, outputs
 
 # merge picture
 def merge(images, size):
@@ -111,6 +107,7 @@ class InfoGAN:
 		self.batch_size = 100
 		self.z_dim = 100
 		self.class_dim = 10
+		self.c_dim = 12
 		self.g = Generator()
 		self.d = Discriminator()
 		self.q = Q()
@@ -132,14 +129,17 @@ class InfoGAN:
 
 	def build(self):
 		self.images = tf.placeholder(tf.float32, [None, 784], name='real_images')
-		self.labels = tf.placeholder(tf.float32, [None, 10], name='labels')
+		#self.labels = tf.placeholder(tf.float32, [None, 10], name='labels')
+		self.c = tf.placeholder(tf.float32, [None, self.c_dim], name='c')
 		self.z = tf.placeholder(tf.float32, [None, self.z_dim], name='z')
 		self.z_sum = tf.summary.histogram("z", self.z)
 
-		self.G = self.g(self.z, self.labels)
-		self.D, self.D_logits = self.d(self.images, self.labels)
-		self.D_, self.D_logits_ = self.d(self.G, self.labels)
-		self.Q = self.q(self.G)
+		self.G = self.g(self.z, self.c)
+		self.D, self.D_logits = self.d(self.images)
+		self.D_, self.D_logits_ = self.d(self.G)
+		self.Q, self.Q_logits = self.q(self.G)
+		self.Q_class, self.Q_conti = tf.split(self.Q, [10, self.c_dim-10],axis = 1)
+		self.c_class, self.c_conti = tf.split(self.c, [10, self.c_dim-10],axis = 1)
 
 		self.d_sum = tf.summary.histogram("d", self.D)
 		self.d__sum = tf.summary.histogram("d_", self.D_)
@@ -155,14 +155,18 @@ class InfoGAN:
 			tf.nn.sigmoid_cross_entropy_with_logits(logits=self.D_logits_,
 			 										labels=tf.ones_like(self.D_)))
 		self.d_loss = self.d_loss_real + self.d_loss_fake
-		self.cond_ent = tf.reduce_mean(-tf.reduce_sum(tf.log(self.Q + 1e-8) * self.labels, 1))
-		self.ent = tf.reduce_mean(-tf.reduce_sum(tf.log(self.labels + 1e-8) * self.labels, 1))
-		self.q_loss = self.cond_ent + self.ent
+
+		self.q_loss_class = tf.reduce_mean(
+			 tf.nn.softmax_cross_entropy_with_logits(logits=self.Q_class,
+			 										 labels=self.c_class))
+		self.q_loss_contin = tf.reduce_mean(tf.square(self.c_conti - self.Q_conti))
+		self.q_loss = self.q_loss_class + self.q_loss_contin
 
 		self.d_loss_real_sum = tf.summary.scalar("d_loss_real", self.d_loss_real)
 		self.d_loss_fake_sum = tf.summary.scalar("d_loss_fake", self.d_loss_fake)
 		self.g_loss_sum = tf.summary.scalar("g_loss", self.g_loss)
 		self.d_loss_sum = tf.summary.scalar("d_loss", self.d_loss)
+		self.q_loss_sum = tf.summary.scalar("q_loss", self.q_loss)
 
 		t_vars = tf.trainable_variables()
 		self.d_vars = [var for var in t_vars if 'discriminator' in var.name]
@@ -189,9 +193,11 @@ class InfoGAN:
 
 		# for sample picture
 		sample_z = np.random.uniform(-1, 1, size=(self.sample_size, self.z_dim))
-		sample_labels = np.zeros([self.sample_size, self.class_dim])
+		sample_classify = np.zeros([self.sample_size, self.class_dim])
 		for i in range(10):
-			sample_labels[i * 10: (i + 1) * 10, i] = 1
+			sample_classify[i * 10: (i + 1) * 10, i] = 1
+		sample_conti = np.random.uniform(-1, 1, size=(self.sample_size, self.c_dim - self.class_dim))
+		sample_c = np.concatenate((sample_classify, sample_conti), axis = 1)
 		sample_images, _ = mnist.test.next_batch(100)
 		# sample_images = (sample_images - 0.5) * 2.0
 		start_time = time.time()
@@ -205,25 +211,29 @@ class InfoGAN:
 		for id in range(1000001):
 
 			# mini_batch
-			batch_images, batch_labels =  mnist.train.next_batch(self.batch_size)
+			batch_images, _ =  mnist.train.next_batch(self.batch_size)
 			# batch_images = (batch_images - 0.5) * 2.0
 			batch_z = np.random.uniform(-1, 1, [self.batch_size, self.z_dim]).astype(np.float32)
-			batch_c = np.random.multinomial(1, 10*[0.1], size=self.batch_size)
+			classify = np.zeros([self.batch_size, 10])
+			index = np.random.randint(10)
+			classify[:,index] = 1
+			conti = np.random.uniform(-1, 1, [self.batch_size, self.c_dim - self.class_dim]).astype(np.float32)
+			batch_c = np.concatenate((classify, conti), axis = 1)
 			# before = batch_images.reshape(-1, 28, 28, 1)
 			# save_images(before, [10, 10], self.sample_dir + 'before.png')
 
 			# update D and G
 			
 			_, summary_str, err_d = self.sess.run([d_optim, self.d_sum, self.d_loss], 
-				feed_dict={self.images: batch_images, self.labels: batch_c, self.z: batch_z})
+				feed_dict={self.images: batch_images, self.c: batch_c, self.z: batch_z})
 			self.writer.add_summary(summary_str, id)
 
 			_, summary_str, err_g = self.sess.run([g_optim, self.g_sum, self.g_loss],
-				feed_dict={self.labels: batch_c, self.z: batch_z})
+				feed_dict={self.c: batch_c, self.z: batch_z})
 			self.writer.add_summary(summary_str, id)
 
 			_, err_q = self.sess.run([q_optim, self.q_loss],
-				feed_dict={self.labels: batch_c, self.z: batch_z})
+				feed_dict={self.c: batch_c, self.z: batch_z})
 
 			# err_d_fake = self.d_loss_fake.eval({self.z: batch_z, self.labels: batch_labels})
 			# err_d_real = self.d_loss_real.eval({self.images: batch_images, self.labels: batch_labels})
@@ -236,7 +246,7 @@ class InfoGAN:
 			if id % 10000 == 0:
 				samples, d_loss, g_loss, q_loss = self.sess.run(
 					[self.G, self.d_loss, self.g_loss, self.q_loss],
-					feed_dict={self.z: sample_z, self.images: sample_images, self.labels: sample_labels}
+					feed_dict={self.z: sample_z, self.images: sample_images, self.c: sample_c}
 				)
 				samples = samples.reshape(-1, 28, 28, 1)
 				# print('shape of samples = ')
