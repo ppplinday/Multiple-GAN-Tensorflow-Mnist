@@ -6,6 +6,7 @@ from vanilla_gan import Vanilla_GAN
 from dcgan import DCGAN
 from cgan import CGAN
 from infogan import InfoGAN
+from wgan import WGAN
 import tensorflow as tf
 
 if __name__ == '__main__':
@@ -20,6 +21,8 @@ if __name__ == '__main__':
 			model = DCGAN(sess, dataset)
 		elif model_name == 'infogan':
 			model = InfoGAN(sess, dataset)
+		elif model_name == 'wgan':
+			model = WGAN(sess, dataset)
 		else:
 			print("We cannot find this model")
 
