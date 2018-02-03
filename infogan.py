@@ -196,7 +196,7 @@ class InfoGAN:
 		sample_classify = np.zeros([self.sample_size, self.class_dim])
 		for i in range(10):
 			sample_classify[i * 10: (i + 1) * 10, i] = 1
-		sample_conti = np.random.uniform(-1, 1, size=(self.sample_size, self.c_dim - self.class_dim))
+		sample_conti = np.random.standard_normal(-1, 1, size=(self.sample_size, self.c_dim - self.class_dim))
 		sample_c = np.concatenate((sample_classify, sample_conti), axis = 1)
 		sample_images, _ = mnist.test.next_batch(100)
 		# sample_images = (sample_images - 0.5) * 2.0
@@ -217,16 +217,17 @@ class InfoGAN:
 			classify = np.zeros([self.batch_size, 10])
 			index = np.random.randint(10)
 			classify[:,index] = 1
-			conti = np.random.uniform(-1, 1, [self.batch_size, self.c_dim - self.class_dim]).astype(np.float32)
+			conti = np.random.standard_normal(-1, 1, [self.batch_size, self.c_dim - self.class_dim]).astype(np.float32)
 			batch_c = np.concatenate((classify, conti), axis = 1)
 			# before = batch_images.reshape(-1, 28, 28, 1)
 			# save_images(before, [10, 10], self.sample_dir + 'before.png')
 
 			# update D and G
 			
-			_, summary_str, err_d = self.sess.run([d_optim, self.d_sum, self.d_loss], 
-				feed_dict={self.images: batch_images, self.c: batch_c, self.z: batch_z})
-			self.writer.add_summary(summary_str, id)
+			for i in range(5):
+				_, summary_str, err_d = self.sess.run([d_optim, self.d_sum, self.d_loss], 
+					feed_dict={self.images: batch_images, self.c: batch_c, self.z: batch_z})
+				self.writer.add_summary(summary_str, id)
 
 			_, summary_str, err_g = self.sess.run([g_optim, self.g_sum, self.g_loss],
 				feed_dict={self.c: batch_c, self.z: batch_z})
