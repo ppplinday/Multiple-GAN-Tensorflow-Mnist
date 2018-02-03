@@ -159,7 +159,7 @@ class InfoGAN:
 		self.q_loss_class = tf.reduce_mean(
 			 tf.nn.softmax_cross_entropy_with_logits(logits=self.Q_class,
 			 										 labels=self.c_class))
-		self.q_loss_contin = tf.reduce_mean(tf.square(self.c_conti - self.Q_conti), axis=1)
+		self.q_loss_contin = tf.reduce_mean(tf.reduce_mean(tf.square(self.c_conti - self.Q_conti), axis=1))
 		self.q_loss = self.q_loss_class + self.q_loss_contin
 
 		self.d_loss_real_sum = tf.summary.scalar("d_loss_real", self.d_loss_real)
