@@ -138,8 +138,8 @@ class InfoGAN:
 		self.D, self.D_logits = self.d(self.images)
 		self.D_, self.D_logits_ = self.d(self.G)
 		self.Q, self.Q_logits = self.q(self.G)
-		self.Q_class, self.Q_conti = tf.split(self.Q, [10, self.c_dim-10],axis = 1)
-		self.c_class, self.c_conti = tf.split(self.c, [10, self.c_dim-10],axis = 1)
+		self.Q_class, self.Q_conti = tf.split(self.Q, [10, self.c_dim-10], axis = 1)
+		self.c_class, self.c_conti = tf.split(self.c, [10, self.c_dim-10], axis = 1)
 
 		self.d_sum = tf.summary.histogram("d", self.D)
 		self.d__sum = tf.summary.histogram("d_", self.D_)
@@ -159,7 +159,7 @@ class InfoGAN:
 		self.q_loss_class = tf.reduce_mean(
 			 tf.nn.softmax_cross_entropy_with_logits(logits=self.Q_class,
 			 										 labels=self.c_class))
-		self.q_loss_contin = tf.reduce_mean(tf.square(self.c_conti - self.Q_conti))
+		self.q_loss_contin = tf.reduce_mean(tf.square(self.c_conti - self.Q_conti), axis=1)
 		self.q_loss = self.q_loss_class + self.q_loss_contin
 
 		self.d_loss_real_sum = tf.summary.scalar("d_loss_real", self.d_loss_real)
@@ -222,7 +222,7 @@ class InfoGAN:
 
 			# update D and G
 			
-			for i in range(5):
+			for i in range(3):
 				_, summary_str, err_d = self.sess.run([d_optim, self.d_sum, self.d_loss], 
 					feed_dict={self.images: batch_images, self.c: batch_c, self.z: batch_z})
 				self.writer.add_summary(summary_str, id)
