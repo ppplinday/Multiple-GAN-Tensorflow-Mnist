@@ -78,7 +78,7 @@ def create_file(path):
 class WGAN:
 	def __init__(self, sess, dataset):
 		self.sess = sess;
-		self.batch_size = 100
+		self.batch_size = 64
 		self.z_dim = 100
 		self.g = Generator()
 		self.d = Discriminator()
