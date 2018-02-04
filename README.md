@@ -2,7 +2,7 @@
 
 ## Introduction
 Those code implement multiple gan including vanilla_gan, dcgan, cgan, infogan and wgan.
-I only use mnist dataset and if I have enough time later, I will update other dataset 
+I only use mnist dataset and if I have enough time later, I will update other dataset.
 
 ## How to run the code
 ### Vanilla_gan
@@ -33,16 +33,16 @@ pip3 train.py wgan mnist
 ```
 ## Result
 vanilla_gan
-![ ](imgae/vanilla_gan.png) 
+![ ](image/vanilla_gan.png) 
 
 dcgan
-![ ](imgae/dcgan.png) 
+![ ](image/dcgan.png) 
 
 cgan
-![ ](imgae/cgan.png) 
+![ ](image/cgan.png) 
 
 infogan
-![ ](imgae/infogan.png) 
+![ ](image/infogan.png) 
 
 wgan
-![ ](imgae/wgan.png) 
+![ ](image/wgan.png) 
