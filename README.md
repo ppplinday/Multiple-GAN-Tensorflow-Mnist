@@ -32,17 +32,17 @@ Paper: [Wasserstein GAN](https://arxiv.org/pdf/1701.07875.pdf)
 pip3 train.py wgan mnist
 ```
 ## Result
-###vanilla_gan
+### vanilla_gan
 ![ ](image/vanilla_gan.png) 
 
-###dcgan
+### dcgan
 ![ ](image/dcgan.png) 
 
-###cgan
+### cgan
 ![ ](image/cgan.png) 
 
-###infogan
+### infogan
 ![ ](image/infogan.png) 
 
-###wgan
+### wgan
 ![ ](image/wgan.png) 
